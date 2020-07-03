@@ -10,6 +10,8 @@ from torchtext import datasets
 import spacy
 
 
+print("START - Construccion del dataset")
+
 # In[2]:
 
 
@@ -71,11 +73,14 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 train_iterator, valid_iterator, test_iterator = data.BucketIterator.splits(
     (train_data, valid_data, test_data), 
     batch_size = BATCH_SIZE, 
-    device = device)
+    device = device,
+    sort_key=lambda x:len(x.comment_text),
+    sort_within_batch=False)
 
 
 # In[7]:
 
+print("START - Creacion de la arquitectura de la red neuronal")
 
 import torch.nn as nn
 import torch.nn.functional as F
@@ -132,7 +137,7 @@ class CNN1d(nn.Module):
 INPUT_DIM = len(TEXT.vocab)
 EMBEDDING_DIM = 100
 N_FILTERS = 100
-FILTER_SIZES = [3,4,5]
+FILTER_SIZES = [3]
 OUTPUT_DIM = 1
 DROPOUT = 0.5
 PAD_IDX = TEXT.vocab.stoi[TEXT.pad_token]
@@ -264,6 +269,7 @@ def epoch_time(start_time, end_time):
 
 # In[ ]:
 
+print("START - Training")
 
 N_EPOCHS = 5
 
@@ -293,6 +299,8 @@ for epoch in range(N_EPOCHS):
 
 
 model.load_state_dict(torch.load('Model-TextClassification-CNN.pt'))
+
+print("START - evaluacion")
 
 test_loss, test_acc = evaluate(model, test_iterator, criterion)
 
@@ -328,6 +336,7 @@ def predict_toxicity(model, sentence, min_len = 5):
 
 # In[ ]:
 
+print("START - Prediccion")
 
-#predict_toxicity(model, "Test")
+#predict_toxicity(model, "You are an idiot!")
 
